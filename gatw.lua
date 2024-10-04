@@ -64,20 +64,6 @@ local TextService = game:GetService("TextService")
 local TweenService = game:GetService("TweenService")
 
 
-local __Menu = {}
-setmetatable(Menu, {
-    __index = function(self, Key) return __Menu[Key] end,
-    __newindex = function(self, Key, Value)
-        __Menu[Key] = Value
-        
-        if Key == "Hue" or Key == "ScreenSize" then return end
-
-        for _, Object in pairs(EventObjects) do Object:Update() end
-        for _, Notification in pairs(Notifications) do Notification:Update() end
-    end
-})
-
-
 Menu.Accent = Settings.Accent
 Menu.Font = Settings.Font
 Menu.IsBackgroundTransparent = Settings.IsBackgroundTransparent
