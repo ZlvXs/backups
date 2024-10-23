@@ -1,3 +1,4 @@
+-- Code Modified by Zlv & K1nz
 -- services
 local runService = game:GetService("RunService");
 local players = game:GetService("Players");
@@ -549,7 +550,7 @@ local EspInterface = {
 			box = false,
 			boxColor = { Color3.new(1,0,0), 1 },
 			boxOutline = true,
-			boxOutlineColor = { Color3.new(0,0,0), 1 },
+			boxOutlineColor = { Color3.new(), 1 },
 			boxFill = false,
 			boxFillColor = { Color3.new(1,0,0), 0.5 },
 			healthBar = false,
@@ -651,7 +652,7 @@ function EspInterface.AddInstance(instance, options)
 	return cache[instance][1];
 end
 
-function EspInterface.Cap()
+function EspInterface.Load()
 	assert(not EspInterface._hasLoaded, "Esp has already been loaded.");
 
 	local function createObject(player)
@@ -681,7 +682,7 @@ function EspInterface.Cap()
 	EspInterface._hasLoaded = true;
 end
 
-function EspInterface.UnCap()
+function EspInterface.Unload()
 	assert(EspInterface._hasLoaded, "Esp has not been loaded yet.");
 
 	for index, object in next, EspInterface._objectCache do
