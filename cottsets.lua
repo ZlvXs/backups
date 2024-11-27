@@ -24,7 +24,7 @@ getgenv().cottware = {
         ["Auto Join Discord"] = false, 
         ["Allow Notifications"] = true,
         ["Notifcation Type"] = "xaxa",
-        ["Notifcation Duration"] = 2,
+        ["Notifcation Duration"] = 1,
     },
     ["Silent Aim"] = {
         ["Enabled"] = false, 
