@@ -19,6 +19,7 @@ Menu:SetVisible(true)
 Menu:Init() --- Needed
 Menu.Watermark()
 Menu.Watermark:Update('watermark')
+Menu.Watermark:SetVisible(true)
 Menu:SetTab("First Tab") --- This tab will show first
 
 --- Notifications
