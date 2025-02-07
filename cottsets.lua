@@ -2,7 +2,7 @@ getgenv().cottware = {
     ["Options"] = {
         ["Version"] = "3.1.4-Electron",
         ["Stealth Mode"] = {
-            ["Enabled"] = true,
+            ["Enabled"] = false,
             ["Key"] = "",
         },
         ["Internal"] = {
@@ -473,8 +473,8 @@ else
 end
 
 local utility = {
-    Invite = "camlock",
-    Folder = "cottwareSettings",
+    Invite = ".",
+    Folder = "w",
     Version = "3.1.4-Electron",
     Ping = 5,
     Bypass = {
