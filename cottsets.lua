@@ -2,7 +2,7 @@ getgenv().cottware = {
     ["Options"] = {
         ["Version"] = "3.1.4-Electron",
         ["Stealth Mode"] = {
-            ["Enabled"] = false,
+            ["Enabled"] = true,
             ["Key"] = "",
         },
         ["Internal"] = {
@@ -47,7 +47,7 @@ getgenv().cottware = {
         },
     },
     ["Cam Lock"] = {
-        ["Enabled"] = true, 
+        ["Enabled"] = false, 
         ["Mode"] = "Target_toggle", 
         ["Target Mode Bind"] = "V", 
         ["Easing Style"] = "Exponential",
