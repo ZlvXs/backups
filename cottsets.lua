@@ -2,13 +2,13 @@ getgenv().cottware = {
     ["Options"] = {
         ["Version"] = "3.1.4-Electron",
         ["Stealth Mode"] = {
-            ["Enabled"] = true,
+            ["Enabled"] = false,
             ["Key"] = "",
         },
         ["Internal"] = {
-            ["Enabled"] = true,
-            ["Auto Show"] = true,
-            ["Bind"] = "F1",
+            ["Enabled"] = false,
+            ["Auto Show"] = false,
+            ["Bind"] = "",
         },
         ["FPS Unlocker"] = {
             ["Enabled"] = false,
@@ -265,180 +265,6 @@ getgenv().cottware = {
         }
     }
 }
-
---- 1
-
-local UserInputService = game:GetService("UserInputService")
-local Heartbeat = game:GetService("RunService").Heartbeat
-local walkSpeed = 15
-local plrs = game:GetService'Players'
-local Heartbeat = game:GetService("RunService").Heartbeat
-local dupping = false
-local plr = plrs.LocalPlayer
-local mouse = plr:GetMouse()
-local rep = game:GetService'ReplicatedStorage'
-local uis = game:GetService'UserInputService'
-local ts = game:GetService'TweenService'
-local rs = game:GetService'RunService'
-local zzz = game:GetService("Players")
-local playerrr = zzz.LocalPlayer
-local character = playerrr.Character or playerrr.CharacterAdded:Wait()
-local humanoid = character:FindFirstChildOfClass("Humanoid")
-
-local Player = game:GetService("Players").LocalPlayer
-local Mouse = Player:GetMouse()
-
-local function Notify(title,text,duration)
-    game:GetService'StarterGui':SetCore('SendNotification',{
-        Title = tostring(title),
-        Text = tostring(text),
-        Duration = tonumber(duration),
-    })
-end
-
-local function GetChar()
-    local Char = Player.Character or Player.CharacterAdded:Wait()
-    return Char
-end
-
-spawn(function()
-    while true do rs.RenderStepped:wait()
-        pcall(function()
-            if not uis:IsKeyDown(Enum.KeyCode.LeftShift) then
-                plr.Character.Humanoid.WalkSpeed = walkSpeed
-            elseif uis:IsKeyDown(Enum.KeyCode.LeftShift) then
-                plr.Character.Humanoid.WalkSpeed = walkSpeed+7
-            end
-        end)
-    end
-end)
-
-spawn(function()
-    while true do rs.RenderStepped:wait()
-        pcall(function()
-            if not uis:IsKeyDown(Enum.KeyCode.E) then
-                plr.Character.Humanoid.WalkSpeed = walkSpeed
-            elseif uis:IsKeyDown(Enum.KeyCode.E) then
-                plr.Character.Humanoid.WalkSpeed = walkSpeed+8
-            end
-        end)
-    end
-end)
-
-local function AddCd(tool,Cd)
-    local cd = Instance.new('IntValue',tool)
-    cd.Name = 'ClientCD'
-    game.Debris:AddItem(cd,Cd)
-end
-local function Shoot(firstPos,nextPos,Revolver)
-    if Revolver:FindFirstChild'Barrel' and Revolver.Barrel:FindFirstChild'Attachment' then
-        if Revolver.Barrel.Attachment:FindFirstChild'Sound' then
-            local SoundClone = Revolver.Barrel.Attachment.Sound:Clone()
-            SoundClone.Name = 'Uncopy'
-            SoundClone.Parent = Revolver.Barrel.Attachment
-            SoundClone:Play()
-            game.Debris:AddItem(SoundClone, 1)
-        end
-        local FilterTable = {}
-        table.insert(FilterTable, plr.Character)
-        table.insert(FilterTable, game.Workspace['Target Filter'])
-        for _, v in pairs(game.Workspace:GetDescendants()) do
-            if v.ClassName == 'Accessory' then
-                table.insert(FilterTable, v)
-            end
-        end
-        local a_1, a_2, a_3 = game.Workspace:FindPartOnRayWithIgnoreList(Ray.new(firstPos, (nextPos - firstPos).Unit * 99999999999999), FilterTable)
-        local BulletCl = rep['Revolver Bullet']:Clone()
-        game.Debris:AddItem(BulletCl, 1)
-        BulletCl.Parent = game.Workspace['Target Filter']
-        local mg = (firstPos - a_2).Magnitude
-        BulletCl.Size = Vector3.new(0.2, 0.2, mg)
-        BulletCl.CFrame = CFrame.new(firstPos, nextPos) * CFrame.new(0, 0, -mg / 2)
-        ts:Create(BulletCl, TweenInfo.new(0.4, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {
-            Size = Vector3.new(0.06, 0.06, mg), 
-            Transparency = 1
-        }):Play()
-        if a_1 then
-            local expPart = Instance.new'Part'
-            game.Debris:AddItem(expPart, 2)
-            expPart.Name = 'Exploding Neon Part'
-            expPart.Anchored = true
-            expPart.CanCollide = true
-            expPart.Shape = 'Ball'
-            expPart.Material = Enum.Material.Neon
-            expPart.BrickColor = BulletCl.BrickColor
-            expPart.Size = Vector3.new(0.1, 0.1, 0.1)
-            expPart.Parent = game.Workspace['Target Filter']
-            expPart.Position = a_2
-            ts:Create(expPart, TweenInfo.new(0.3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {
-                Size = Vector3.new(2, 2, 2), 
-                Transparency = 1
-            }):Play()
-            if Revolver:FindFirstChild'DamageRemote' and a_1.Parent:FindFirstChild'Humanoid' then
-                Revolver.DamageRemote:FireServer(a_1.Parent.Humanoid)
-            end
-        end
-    end
-end
-
---- Tp Walk
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local player = Players.LocalPlayer
-local tpWalkSpeed = 100
-
-getgenv().tpWalkEnabled = false
-
-local function tpWalk()
-RunService.RenderStepped:Connect(function()
-if not player.Character or not player.Character:FindFirstChildOfClass("Humanoid") then
-return
-end
-
-local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-if getgenv().tpWalkEnabled and humanoid and humanoid.MoveDirection.Magnitude > 0 then
-local moveDirection = humanoid.MoveDirection * tpWalkSpeed * RunService.RenderStepped:Wait()
-player.Character:SetPrimaryPartCFrame(player.Character.PrimaryPart.CFrame + moveDirection)
-end
-end)
-end
-
-local function onCharacterAdded(character)
-character:WaitForChild("Humanoid")
-tpWalk()
-end
-
-player.CharacterAdded:Connect(onCharacterAdded)
-
-if player.Character then
-onCharacterAdded(player.Character)
-end
-
---- Spin Bot
-
-getgenv().spinbotEnabled = false
-local spinBotSpeed = 100
-
-local function spinbot()
-RunService.RenderStepped:Connect(function()
-if getgenv().spinbotEnabled then
-local character = player.Character
-if character and character:FindFirstChild("HumanoidRootPart") then
-local humanoidRootPart = character.HumanoidRootPart
-humanoidRootPart.CFrame = humanoidRootPart.CFrame * CFrame.Angles(0, math.rad(spinBotSpeed), 0)
-end
-end
-end)
-end
-
-spinbot()
-
---- 2
-
---[[if cottware.Options["FPS Unlocker"].Enabled then 
-    setfpscap(cottware.Options["FPS Unlocker"].FPS)
-end]]
 
 for i,v in pairs(game.Workspace:GetDescendants()) do 
     if v:IsA("Seat") then 
