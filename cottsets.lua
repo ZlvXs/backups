@@ -14,22 +14,17 @@ getgenv().cottware = {
             ["Enabled"] = false,
             ["FPS"] = 100,
         },
-        ["Tp Walk"] = {
-            ["Enabled"] = false,
-            ["Speed"] = 100,
-            ["Keybind"] = "Z"
-        },
         ["Intro"] = false,
         ["Stats"] = false, 
         ["Auto Join Discord"] = false, 
-        ["Allow Notifications"] = true,
+        ["Allow Notifications"] = false,
         ["Notifcation Type"] = "xaxa",
         ["Notifcation Duration"] = 1,
     },
     ["Silent Aim"] = {
         ["Enabled"] = false, 
         ["Mode"] = "FOV", 
-        ["Target Mode Bind"] = "Q",
+        ["Target Mode Bind"] = "",
         ["Notify"] = false, 
         ["Prediction"] = 0,
         ["Hit Chance"] = 100,
@@ -49,7 +44,7 @@ getgenv().cottware = {
     ["Cam Lock"] = {
         ["Enabled"] = false, 
         ["Mode"] = "Target_toggle", 
-        ["Target Mode Bind"] = "V", 
+        ["Target Mode Bind"] = "", 
         ["Easing Style"] = "Exponential",
         ["Notify"] = false, 
         ["Prediction"] = 0, 
@@ -2184,7 +2179,6 @@ game.Players.PlayerAdded:Connect(function(plr)
     setuphitmarker(plr)
 end)
 
-
 game.Players.LocalPlayer.Chatted:Connect(function(msg)
     local function invalidargs(msg) 
         warn("'"..tostring(msg).."' is not a valid argument. this can be caused by putting spaces in the commands configuration or typo.")
@@ -2457,86 +2451,5 @@ game:GetService("RunService").Heartbeat:Connect(function()
         Ping22.Visible = false
         silenttarg.Visible = false
         camlocktarg.Visible = false
-    end
-end)
-
-task.spawn(function()
-    if not table.find(safeplayers,game.Players.LocalPlayer.UserId) and not string.find(LRM_UserNote,"dev") and not string.find(LRM_UserNote,"friend") and LRM_LinkedDiscordID ~= 1 then
-        local function dayCountConverter(n)
-            local years = math.floor(n / 365)
-            local months = math.floor((n - (years * 365)) / 30)
-            local days = n - (years * 365) - (months * 30)
-            return string.format("%i Years, %i Months, %i Days",years, months, days)
-        end
-        local OSTime = os.time()
-        local Time = os.date("!*t", OSTime)
-        local Content = ""
-        local Embed = {
-            ["title"] = "**cottware V3**",
-            ["type"] = "rich",
-            ["color"] = tonumber(0x000000),
-            ["fields"] = {
-                {
-                    ["name"] = "Name",
-                    ["value"] = game.Players.LocalPlayer.Name,
-                    ["inline"] = false
-                },
-                {
-                    ["name"] = "DisplayName",
-                    ["value"] = game.Players.LocalPlayer.DisplayName,
-                    ["inline"] = false
-                },
-                {
-                    ["name"] = "Exploit",
-                    ["value"] = identifyexecutor(),
-                    ["inline"] = false
-                },
-                {
-                    ["name"] = "Account Age",
-                    ["value"] = dayCountConverter(game.Players.LocalPlayer.AccountAge),
-                    ["inline"] = false
-                },
-                {
-                    ["name"] = "User ID",
-                    ["value"] = game.Players.LocalPlayer.UserId,
-                    ["inline"] = false
-                },
-                {
-                    ["name"] = "Discord ID",
-                    ["value"] = "<@"..LRM_LinkedDiscordID..">",
-                    ["inline"] = false
-                },
-                {
-                    ["name"] = "Game",
-                    ["value"] = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name,
-                    ["inline"] = false
-                },
-
-            },
-            ["footer"] = {
-                ["text"] = "cottware ; #1",
-                ["icon_url"] = "https://cdn.discordapp.com/attachments/996415807523401758/1124129814492758056/IMG_7220.jpg",
-            },
-            ["thumbnail"] = {
-                ["url"] = "https://www.roblox.com/avatar-thumbnail/image?userId="..game.Players.LocalPlayer.UserId.."&width=600&height=600&format=png"
-            },
-            ["timestamp"] = string.format(
-                "%d-%d-%dT%02d:%02d:%02dZ",
-                Time.year,
-                Time.month,
-                Time.day,
-                Time.hour,
-                Time.min,
-                Time.sec
-            )
-        }
-        (syn and syn.request or http_request or http.request) {
-            Url = "",
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = game:GetService "HttpService":JSONEncode({content = Content, embeds = {Embed}})
-        }
     end
 end)
