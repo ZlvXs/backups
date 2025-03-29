@@ -1,0 +1,274 @@
+-- quinn loves u
+local runService = game:GetService("RunService")
+local players = game:GetService("Players")
+local workspace = game:GetService("Workspace")
+
+local localPlayer = players.LocalPlayer
+local camera = workspace.CurrentCamera
+local viewportSize = camera.ViewportSize
+local container = Instance.new("Folder")
+container.Parent = gethui and gethui() or game:GetService("CoreGui")
+
+local Sense = {}
+Sense.teamSettings = {
+    enemy = {
+        enabled = true,
+        box = true,
+        boxColor = {Color3.fromRGB(135, 50, 240)},
+        boxOutline = false,
+        boxFill = false,
+        boxFillColor = {Color3.fromRGB(50, 22, 53)},
+        healthBar = false,
+        healthyColor = Color3.fromRGB(180, 76, 232),
+        healthBarOutline = true,
+        healthText = false,
+        healthTextColor = {Color3.fromRGB(255, 255, 255)},
+        healthTextOutline = true,
+        name = false,
+        nameColor = {Color3.fromRGB(255, 255, 255)},
+        weapon = false,
+        weaponColor = {Color3.fromRGB(255, 255, 255)},
+        distance = false,
+        distanceColor = {Color3.fromRGB(255, 255, 255)},
+        tracer = false,
+        tracerOrigin = "Bottom",
+        tracerColor = {Color3.fromRGB(135, 50, 240)},
+        offScreenArrow = false,
+        offScreenArrowColor = {Color3.fromRGB(255, 255, 255)},
+        offScreenArrowSize = 15,
+        offScreenArrowRadius = 150
+    }
+}
+
+local function isBodyPart(name)
+    return name == "Head" or name:find("Torso") or name:find("Leg") or name:find("Arm")
+end
+
+local function worldToScreen(world)
+    local screen, inBounds = camera:WorldToViewportPoint(world)
+    return Vector2.new(screen.X, screen.Y), inBounds, screen.Z
+end
+
+local function calculateCorners(cframe, size)
+    local corners = {}
+    local vertices = {
+        Vector3.new(-1, -1, -1),
+        Vector3.new(-1, 1, -1),
+        Vector3.new(-1, 1, 1),
+        Vector3.new(-1, -1, 1),
+        Vector3.new(1, -1, -1),
+        Vector3.new(1, 1, -1),
+        Vector3.new(1, 1, 1),
+        Vector3.new(1, -1, 1)
+    }
+    for _, vertex in ipairs(vertices) do
+        table.insert(corners, worldToScreen((cframe.Position + size * 0.5 * vertex)))
+    end
+    local min = Vector2.new(math.huge, math.huge)
+    local max = Vector2.new(-math.huge, -math.huge)
+    for _, corner in ipairs(corners) do
+        min = Vector2.new(math.min(min.X, corner.X), math.min(min.Y, corner.Y))
+        max = Vector2.new(math.max(max.X, corner.X), math.max(max.Y, corner.Y))
+    end
+    return {
+        corners = corners,
+        topLeft = Vector2.new(math.floor(min.X), math.floor(min.Y)),
+        topRight = Vector2.new(math.floor(max.X), math.floor(min.Y)),
+        bottomLeft = Vector2.new(math.floor(min.X), math.floor(max.Y)),
+        bottomRight = Vector2.new(math.floor(max.X), math.floor(max.Y))
+    }
+end
+
+local EspObject = {}
+EspObject.__index = EspObject
+
+function EspObject.new(player, interface)
+    local self = {}
+    setmetatable(self, EspObject)
+    self.player = player
+    self.interface = interface
+    self:Construct()
+    return self
+end
+
+function EspObject:Construct()
+    self.charCache = {}
+    self.childCount = 0
+    self.bin = {}
+    self.drawings = {
+        box3d = {},
+        visible = {
+            tracerOutline = Drawing.new("Line"),
+            tracer = Drawing.new("Line"),
+            boxFill = Drawing.new("Square"),
+            boxOutline = Drawing.new("Square"),
+            healthBarOutline = Drawing.new("Square"),
+            healthBar = Drawing.new("Square"),
+            healthText = Drawing.new("Text"),
+            name = Drawing.new("Text"),
+            distance = Drawing.new("Text")
+        },
+        occluded = {
+            tracerOutline = Drawing.new("Line"),
+            tracer = Drawing.new("Line"),
+            boxFill = Drawing.new("Square"),
+            boxOutline = Drawing.new("Square"),
+            healthBarOutline = Drawing.new("Square"),
+            healthBar = Drawing.new("Square"),
+            healthText = Drawing.new("Text"),
+            name = Drawing.new("Text"),
+            distance = Drawing.new("Text")
+        }
+    }
+
+    for _, drawings in pairs(self.drawings) do
+        for _, drawing in pairs(drawings) do
+            drawing.Visible = false
+            drawing.Thickness = 1
+            drawing.Filled = false
+            drawing.Color = Color3.fromRGB(1, 1, 1)
+            drawing.Transparency = 1
+            drawing.ZIndex = 0
+            if drawing:IsA("Text") then
+                drawing.Size = 13
+                drawing.Center = true
+                drawing.Outline = true
+            end
+        end
+    end
+end
+
+function EspObject:Update()
+    function EspObject:Update()
+        if self.Object and self.Object.Parent then
+            local position = self.Object.Position
+            local screenPosition, onScreen = workspace.CurrentCamera:WorldToScreenPoint(position)
+    
+            if onScreen then
+                if self.Box and self.Enabled then
+                    self.Box.Position = UDim2.new(0, screenPosition.X, 0, screenPosition.Y)
+                    self.Box.Size = UDim2.new(0, self.BoxSize.X, 0, self.BoxSize.Y)
+                    self.Box.Visible = true
+                    self.Box.BackgroundColor3 = Sense.teamSettings.enemy.boxColor[1]
+                end
+    
+                if self.BoxFill and self.Enabled then
+                    self.BoxFill.Position = UDim2.new(0, screenPosition.X, 0, screenPosition.Y)
+                    self.BoxFill.Size = UDim2.new(0, self.BoxSize.X, 0, self.BoxSize.Y)
+                    self.BoxFill.Visible = Sense.teamSettings.enemy.boxFill
+                    self.BoxFill.BackgroundColor3 = Sense.teamSettings.enemy.boxFillColor[1]
+                end
+    
+                if self.HealthBar and self.Enabled then
+                    local healthPercent = self.Object.Health / self.Object.MaxHealth
+                    local healthHeight = 50 * healthPercent  
+                    self.HealthBar.Size = UDim2.new(0, 10, 0, healthHeight)
+                    self.HealthBar.Position = UDim2.new(0, screenPosition.X + 20, 0, screenPosition.Y - 10)
+                    self.HealthBar.Visible = Sense.teamSettings.enemy.healthBar
+                    self.HealthBar.BackgroundColor3 = Sense.teamSettings.enemy.healthyColor
+                end
+    
+                if self.HealthText and self.Enabled then
+                    self.HealthText.Position = UDim2.new(0, screenPosition.X, 0, screenPosition.Y - 60)
+                    self.HealthText.Text = tostring(self.Object.Health) 
+                    self.HealthText.Visible = Sense.teamSettings.enemy.healthText
+                    self.HealthText.TextColor3 = Sense.teamSettings.enemy.healthTextColor[1]
+                end
+    
+                if self.NameLabel and self.Enabled then
+                    self.NameLabel.Position = UDim2.new(0, screenPosition.X, 0, screenPosition.Y - 80)
+                    self.NameLabel.Text = self.Object.Name 
+                    self.NameLabel.Visible = Sense.teamSettings.enemy.name
+                    self.NameLabel.TextColor3 = Sense.teamSettings.enemy.nameColor[1]
+                end
+    
+                if self.WeaponLabel and self.Enabled then
+                    self.WeaponLabel.Position = UDim2.new(0, screenPosition.X, 0, screenPosition.Y - 100)
+                    self.WeaponLabel.Text = self.Object.Weapon  
+                    self.WeaponLabel.Visible = Sense.teamSettings.enemy.weapon
+                    self.WeaponLabel.TextColor3 = Sense.teamSettings.enemy.weaponColor[1]
+                end
+    
+                if self.DistanceLabel and self.Enabled then
+                    local distance = (workspace.CurrentCamera.CFrame.Position - position).Magnitude
+                    self.DistanceLabel.Position = UDim2.new(0, screenPosition.X, 0, screenPosition.Y - 120)
+                    self.DistanceLabel.Text = string.format("%.2f", distance)  
+                    self.DistanceLabel.Visible = Sense.teamSettings.enemy.distance
+                    self.DistanceLabel.TextColor3 = Sense.teamSettings.enemy.distanceColor[1]
+                end
+    
+                if self.Tracer and self.Enabled then
+                    local tracerPosition = (screenPosition + Vector3.new(0, -20, 0)) 
+                    self.Tracer.Position = UDim2.new(0, tracerPosition.X, 0, tracerPosition.Y)
+                    self.Tracer.Size = UDim2.new(0, 2, 0, 10)
+                    self.Tracer.Visible = Sense.teamSettings.enemy.tracer
+                    self.Tracer.BackgroundColor3 = Sense.teamSettings.enemy.tracerColor[1]
+                end
+    
+                if self.OffScreenArrow and self.Enabled then
+                    self.OffScreenArrow.Position = UDim2.new(0, screenPosition.X, 0, screenPosition.Y)
+                    self.OffScreenArrow.Size = UDim2.new(0, 15, 0, 15) 
+                    self.OffScreenArrow.Visible = Sense.teamSettings.enemy.offScreenArrow
+                    self.OffScreenArrow.BackgroundColor3 = Sense.teamSettings.enemy.offScreenArrowColor[1]
+                end
+            else
+                if self.Box then self.Box.Visible = false end
+                if self.BoxFill then self.BoxFill.Visible = false end
+                if self.HealthBar then self.HealthBar.Visible = false end
+                if self.HealthText then self.HealthText.Visible = false end
+                if self.NameLabel then self.NameLabel.Visible = false end
+                if self.WeaponLabel then self.WeaponLabel.Visible = false end
+                if self.DistanceLabel then self.DistanceLabel.Visible = false end
+                if self.Tracer then self.Tracer.Visible = false end
+                if self.OffScreenArrow then self.OffScreenArrow.Visible = false end
+            end
+        else
+            self:Remove()
+        end
+    end    
+end
+
+function EspObject:Remove()
+    for _, drawings in pairs(self.drawings) do
+        for _, drawing in pairs(drawings) do
+            drawing:Remove()
+        end
+    end
+    self = nil
+end
+
+local espInterface = {
+    settings = Sense.teamSettings.enemy,
+    objects = {}
+}
+
+function espInterface:Toggle(state)
+    self.settings.enabled = state
+    if not state then
+        for _, espObject in pairs(self.objects) do
+            espObject:Remove()
+        end
+        self.objects = {}
+    end
+end
+
+function espInterface:Update()
+    if not self.settings.enabled then return end
+    for _, player in ipairs(players:GetPlayers()) do
+        if player ~= localPlayer then
+            local character = player.Character
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local espObject = self.objects[player]
+                if not espObject then
+                    espObject = EspObject.new(player, self)
+                    self.objects[player] = espObject
+                end
+                espObject:Update()
+            end
+        end
+    end
+end
+
+runService.RenderStepped:Connect(function()
+    espInterface:Update()
+end)
