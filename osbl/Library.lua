@@ -4075,6 +4075,7 @@ function Library:CreateWindow(WindowInfo)
             Size = UDim2.new(0, X, 1, 0),
             Text = WindowInfo.Title,
             TextSize = 20,
+            RichText = true,
             Parent = TitleHolder,
         })
 
@@ -4163,6 +4164,7 @@ function Library:CreateWindow(WindowInfo)
             Text = WindowInfo.Footer,
             TextSize = 14,
             TextTransparency = 0.5,
+            RichText = true,
             Parent = BottomBar,
         })
 
