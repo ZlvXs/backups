@@ -3476,7 +3476,7 @@ do
 
             local Count = 0
             for _, Value in pairs(Values) do
-                if SearchBox and not tostring(Value):lower():match(SearchBox.Text:lower()) then
+                if SearchBox and not tostring(Value):find(SearchBox.Text, 1, true) then
                     continue
                 end
 
